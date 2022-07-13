@@ -39,6 +39,25 @@ func writeError(w http.ResponseWriter, err error) (int, error) {
 	return w.Write(b)
 }
 
+type infoResponse struct {
+	response
+	Message string `json:"error"`
+}
+
+func newInfoResponse(err error) infoResponse {
+	return infoResponse{response: response{OK: true}, Message: err.Error()}
+}
+
+func writeInfo(w http.ResponseWriter, err error) (int, error) {
+	body := newInfoResponse(err)
+	b, e := json.Marshal(body)
+	// if an error is occured on marshaling, write empty value as response.
+	if e != nil {
+		return w.Write([]byte{})
+	}
+	return w.Write(b)
+}
+
 func writeSuccess(w http.ResponseWriter, path string) (int, error) {
 	body := newUploadedResponse(path)
 	b, e := json.Marshal(body)

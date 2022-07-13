@@ -209,6 +209,29 @@ func (s Server) handlePut(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, r.URL.Path)
 }
 
+func (s Server) handleDelete(w http.ResponseWriter, r *http.Request) {
+	matches := rePathFiles.FindStringSubmatch(r.URL.Path)
+	logger.WithField("path", r.URL.Path).Info("invalid path")
+	if matches == nil {
+		logger.WithField("path", r.URL.Path).Info("invalid path")
+		w.WriteHeader(http.StatusNotFound)
+		writeError(w, fmt.Errorf("\"%s\" is not found", r.URL.Path))
+		return
+	}
+
+	targetPath := path.Join(s.DocumentRoot, matches[1])
+	defer r.Body.Close()
+	if _, err := os.Stat(targetPath); err == nil || os.IsExist(err) {
+		// your code here if file exists
+		os.Remove(targetPath)
+		logger.WithField("path", targetPath).Info(" : targetPath")
+		writeInfo(w, fmt.Errorf("\"%s\" is deleted", targetPath))
+	} else {
+		writeError(w, fmt.Errorf("\"%s\" is not found in server", targetPath))
+	}
+
+}
+
 func (s Server) handleOptions(w http.ResponseWriter, r *http.Request) {
 	var allowedMethods []string
 	if rePathFiles.MatchString(r.URL.Path) {
@@ -264,10 +287,12 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.handlePost(w, r)
 	case http.MethodPut:
 		s.handlePut(w, r)
+	case http.MethodDelete:
+		s.handleDelete(w, r)
 	case http.MethodOptions:
 		s.handleOptions(w, r)
 	default:
-		w.Header().Add("Allow", "GET,HEAD,POST,PUT")
+		w.Header().Add("Allow", "GET,HEAD,POST,PUT,DELETE")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		writeError(w, fmt.Errorf("method \"%s\" is not allowed", r.Method))
 	}

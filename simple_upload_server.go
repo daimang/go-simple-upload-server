@@ -19,9 +19,9 @@ func run(args []string) int {
 	listenPort := flag.Int("port", 25478, "port number to listen on")
 	tlsListenPort := flag.Int("tlsport", 25443, "port number to listen on with TLS")
 	// 5,242,880 bytes == 5 MiB
-	maxUploadSize := flag.Int64("upload_limit", 5242880, "max size of uploaded file (byte)")
+	maxUploadSize := flag.Int64("upload_limit", 524288000, "max size of uploaded file (byte)")
 	tokenFlag := flag.String("token", "", "specify the security token (it is automatically generated if empty)")
-	protectedMethodFlag := flag.String("protected_method", "GET,POST,HEAD,PUT", "specify methods intended to be protect by the security token")
+	protectedMethodFlag := flag.String("protected_method", "GET,POST,HEAD,PUT,DELETE", "specify methods intended to be protect by the security token")
 	logLevelFlag := flag.String("loglevel", "info", "logging level")
 	certFile := flag.String("cert", "", "path to certificate file")
 	keyFile := flag.String("key", "", "path to key file")
@@ -58,6 +58,8 @@ func run(args []string) int {
 			protectedMethods = append(protectedMethods, http.MethodHead)
 		} else if strings.EqualFold("PUT", method) {
 			protectedMethods = append(protectedMethods, http.MethodPut)
+		} else if strings.EqualFold("DELETT", method) {
+			protectedMethods = append(protectedMethods, http.MethodDelete)
 		} else if strings.EqualFold("OPTIONS", method) {
 			protectedMethods = append(protectedMethods, http.MethodOptions)
 		}
